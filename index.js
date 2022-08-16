@@ -1,4 +1,20 @@
 window.addEventListener('load', function() {
+    let soundIsOn = false;
+
+    const soundToggle = document.getElementById("soundToggle");
+    soundToggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+
+        if (!soundIsOn) {
+            soundIsOn = true;
+            this.style.opacity = "1";
+        } else {
+            soundIsOn = false;
+            this.style.opacity = "0.2";
+        }
+    })
+
+
     let timeToNextBox = 0;
     let boxInterval = 1500;
     let lastTime = 0;
@@ -13,7 +29,7 @@ window.addEventListener('load', function() {
     let collisionCanvas;
     let collisionCtx;
 
-    function initMainCanvas() {
+    function initData() {
         canvas = document.getElementById('gameCanvas');
         ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth;
@@ -28,10 +44,10 @@ window.addEventListener('load', function() {
         drawTip();
     }
 
-    initMainCanvas();
+    initData();
 
     window.addEventListener('resize', () => {
-        initMainCanvas();
+        initData();
     });
 
     function drawTip() {
@@ -145,7 +161,7 @@ window.addEventListener('load', function() {
 
         update(deltatime) {
             if (this.frame === 0) {
-                this.sound.play();
+                soundIsOn && this.sound.play();
             }
 
             this.timeSinceLastFrame += deltatime;
@@ -206,7 +222,7 @@ window.addEventListener('load', function() {
         const shotSound = new Audio();
         shotSound.src = './sounds/gunShot.mp3';
 
-        shotSound.play();
+        soundIsOn && shotSound.play();
 
         flyBoxes.forEach(object => {
             if (object.randomColors[0] === pc[0] && object.randomColors[1] === pc[1] && object.randomColors[2] === pc[2]) {
@@ -232,7 +248,7 @@ window.addEventListener('load', function() {
 
         const sound = new Audio();
         sound.src = './sounds/gameOver.ogg';
-        sound.play();
+        soundIsOn && sound.play();
 
         drawTip();
     }
