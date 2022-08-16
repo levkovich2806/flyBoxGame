@@ -135,7 +135,7 @@ window.addEventListener('load', function() {
             this.image.src = './images/boom.png';
 
             this.sound = new Audio();
-            this.sound.src = './sounds/laserfire01.ogg';
+            this.sound.src = './sounds/rumble.flac';
 
             this.timeSinceLastFrame = 0;
             this.frameInterval = 100;
@@ -202,6 +202,11 @@ window.addEventListener('load', function() {
         const pc = detectPixelColor?.data;
 
         shoots++;
+
+        const shotSound = new Audio();
+        shotSound.src = './sounds/gunShot.mp3';
+
+        shotSound.play();
 
         flyBoxes.forEach(object => {
             if (object.randomColors[0] === pc[0] && object.randomColors[1] === pc[1] && object.randomColors[2] === pc[2]) {
