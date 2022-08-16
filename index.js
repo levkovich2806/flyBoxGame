@@ -151,7 +151,7 @@ window.addEventListener('load', function() {
             this.image.src = './images/boom.png';
 
             this.sound = new Audio();
-            this.sound.src = './sounds/rumble.flac';
+            this.sound.src = './sounds/magic.mp3';
 
             this.timeSinceLastFrame = 0;
             this.frameInterval = 100;
