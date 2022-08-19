@@ -1,3 +1,5 @@
+import Explosion from './modules/explosion';
+
 window.addEventListener('load', function() {
     let soundIsOn = false;
 
@@ -91,7 +93,7 @@ window.addEventListener('load', function() {
             this.markedForDeletion = false;
 
             this.image = new Image();
-            this.image.src = './images/spritesheet1.png';
+            this.image.src = '../public/assets/images/spritesheet1.png';
 
             this.frame = 0;
             this.maxFrame = 9;
@@ -136,50 +138,6 @@ window.addEventListener('load', function() {
 
     let explosions = [];
 
-    class Explosion {
-        constructor(x, y ,size) {
-            this.spriteWidth = 200;
-            this.spriteHeight = 179;
-
-            this.x = x;
-            this.y = y;
-            this.size = size;
-
-            this.frame = 0;
-
-            this.image = new Image();
-            this.image.src = './images/boom.png';
-
-            this.sound = new Audio();
-            this.sound.src = './sounds/magic.mp3';
-
-            this.timeSinceLastFrame = 0;
-            this.frameInterval = 100;
-
-            this.markedForDeletion = false;
-        }
-
-        update(deltatime) {
-            if (this.frame === 0) {
-                soundIsOn && this.sound.play();
-            }
-
-            this.timeSinceLastFrame += deltatime;
-
-            if (this.timeSinceLastFrame > this.frameInterval) {
-                this.frame++;
-                this.timeSinceLastFrame = 0;
-
-                if (this.frame > 5) {
-                    this.markedForDeletion = true;
-                }
-            }
-        }
-        draw() {
-            ctx.drawImage(this.image, this.frame * this.spriteWidth, 0, this.spriteWidth, this.spriteHeight, this.x, this.y - this.size / 4, this.size, this.size);
-        }
-    }
-
     function drawScore() {
         ctx.fillStyle = 'black';
         ctx.fillText(`Score: ${score}`, 10, 40);
@@ -220,7 +178,7 @@ window.addEventListener('load', function() {
         shoots++;
 
         const shotSound = new Audio();
-        shotSound.src = './sounds/gunShot.mp3';
+        shotSound.src = '../public/assets/sounds/gunShot.mp3';
 
         soundIsOn && shotSound.play();
 
@@ -228,8 +186,7 @@ window.addEventListener('load', function() {
             if (object.randomColors[0] === pc[0] && object.randomColors[1] === pc[1] && object.randomColors[2] === pc[2]) {
                 object.markedForDeletion = true;
                 score++;
-
-                explosions.push(new Explosion(object.x, object.y, object.width));
+                explosions.push(new Explosion(object.x, object.y, object.width, ctx));
             }
         })
     })
@@ -247,7 +204,7 @@ window.addEventListener('load', function() {
         ctx.restore();
 
         const sound = new Audio();
-        sound.src = './sounds/gameOver.ogg';
+        sound.src = '../public/assets/sounds/gameOver.ogg';
         soundIsOn && sound.play();
 
         drawTip();
