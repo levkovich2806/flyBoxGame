@@ -3,6 +3,7 @@ export default class FlyBox {
         this.ctx = ctx;
         this.collisionCtx = collisionCtx;
         this.handleGameOver = handleGameOver;
+        this.canvas = canvas;
 
 
         this.spriteWidth = 259;
@@ -35,7 +36,7 @@ export default class FlyBox {
     }
 
     update(deltaTime) {
-        if (this.y < 0 || this.y > canvas.height - this.height) {
+        if (this.y < 0 || this.y > this.canvas.height - this.height) {
             this.directionY = this.directionY * -1;
         }
 
