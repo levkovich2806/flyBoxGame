@@ -2,15 +2,19 @@ import Explosion from './modules/explosion';
 import FlyBox from './modules/flyBox';
 import Sound from './modules/sound';
 import Scope from './modules/scope';
+import Bullets from "./modules/bullets";
 
 const SHOT = 'shot';
 const GAME_OVER = 'gameover';
+const RELOAD = 'RELOAD';
 
 window.addEventListener('load', function() {
     let soundIsOn = false;
 
     Sound.addAudio(SHOT, 'public/assets/sounds/gunShot.mp3');
     Sound.initAudio(SHOT);
+    Sound.addAudio(RELOAD, 'public/assets/sounds/reload.mp3');
+    Sound.initAudio(RELOAD);
     Sound.addAudio(GAME_OVER, 'public/assets/sounds/gameOver.ogg');
 
     const soundToggle = document.getElementById("soundToggle");
@@ -36,6 +40,13 @@ window.addEventListener('load', function() {
         mousePosition.x = e.x;
         mousePosition.y = e.y;
     })
+    // document.addEventListener('keydown', (e) => {
+    //     const {code} = e
+    //
+    //     if (code === 'KeyR') {
+    //         handleReload();
+    //     }
+    // });
 
     let timeToNextBox = 0;
     let boxInterval = 1500;
@@ -55,6 +66,11 @@ window.addEventListener('load', function() {
         x: 0,
         y: 0
     }
+
+    let bulletsCount = 10;
+    let emptyBullets = 0;
+    let isReloading = false;
+    let reloadDuration = 3;
 
     function initData() {
         canvas = document.getElementById('gameCanvas');
@@ -92,6 +108,8 @@ window.addEventListener('load', function() {
         shoots = 0;
         flyBoxes = [];
         explosions = [];
+        emptyBullets = 0;
+        isReloading = false;
         toggleCursor();
         animate(0);
     }
@@ -139,9 +157,19 @@ window.addEventListener('load', function() {
             return;
         }
 
+        if (isReloading) {
+            return;
+        }
+
 
         const detectPixelColor = collisionCtx.getImageData(e.x, e.y, 1, 1);
         const pc = detectPixelColor?.data;
+
+        emptyBullets++;
+
+        if (emptyBullets === bulletsCount) {
+            handleReload();
+        }
 
         shoots++;
         Sound.initAudioAndPlay(SHOT);
@@ -155,6 +183,15 @@ window.addEventListener('load', function() {
         })
     }
 
+    function handleReload() {
+        Sound.play(RELOAD);
+        isReloading = true;
+
+        setTimeout(() => {
+            emptyBullets = 0;
+            isReloading = false;
+        }, reloadDuration * 1000);
+    }
 
     function handleGameOver() {
         toggleCursor(true);
@@ -181,9 +218,8 @@ window.addEventListener('load', function() {
         setGameOverState(true);
     }
 
-
-
     const scope = new Scope(mousePosition.x,mousePosition.y, ctx);
+    const bullets = new Bullets({x: 10, y: canvas.height - 100, ctx, emptyBullets, bulletsCount})
 
     function animate(timestamp) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -215,6 +251,9 @@ window.addEventListener('load', function() {
 
         scope.update(mousePosition.x, mousePosition.y);
         scope.draw();
+
+        bullets.update(emptyBullets);
+        bullets.draw();
 
         flyBoxes = flyBoxes.filter(object => !object.markedForDeletion);
         explosions = explosions.filter(object => !object.markedForDeletion);
