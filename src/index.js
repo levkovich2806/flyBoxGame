@@ -1,7 +1,15 @@
 import Explosion from './modules/explosion';
+import Sound from './modules/sound';
+
+const SHOT = 'shot';
+const GAME_OVER = 'gameover';
 
 window.addEventListener('load', function() {
     let soundIsOn = false;
+
+    Sound.addAudio(SHOT, 'public/assets/sounds/gunShot.mp3');
+    Sound.initAudio(SHOT);
+    Sound.addAudio(GAME_OVER, 'public/assets/sounds/gameOver.ogg');
 
     const soundToggle = document.getElementById("soundToggle");
     soundToggle.addEventListener('click', function(e) {
@@ -9,9 +17,11 @@ window.addEventListener('load', function() {
 
         if (!soundIsOn) {
             soundIsOn = true;
+            Sound.setSoundState(true);
             this.style.opacity = "1";
         } else {
             soundIsOn = false;
+            Sound.setSoundState(false);
             this.style.opacity = "0.2";
         }
     })
@@ -176,11 +186,7 @@ window.addEventListener('load', function() {
         const pc = detectPixelColor?.data;
 
         shoots++;
-
-        const shotSound = new Audio();
-        shotSound.src = '../public/assets/sounds/gunShot.mp3';
-
-        soundIsOn && shotSound.play();
+        Sound.initAudioAndPlay(SHOT);
 
         flyBoxes.forEach(object => {
             if (object.randomColors[0] === pc[0] && object.randomColors[1] === pc[1] && object.randomColors[2] === pc[2]) {
@@ -203,9 +209,7 @@ window.addEventListener('load', function() {
         ctx.fillText(`GAME OVER`, canvas.width / 2 + 5, canvas.height / 2 + 5)
         ctx.restore();
 
-        const sound = new Audio();
-        sound.src = '../public/assets/sounds/gameOver.ogg';
-        soundIsOn && sound.play();
+        Sound.initAudioAndPlay(GAME_OVER);
 
         drawTip();
     }
