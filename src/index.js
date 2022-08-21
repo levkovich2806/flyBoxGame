@@ -1,6 +1,7 @@
 import Explosion from './modules/explosion';
 import FlyBox from './modules/flyBox';
 import Sound from './modules/sound';
+import Scope from './modules/scope';
 
 const SHOT = 'shot';
 const GAME_OVER = 'gameover';
@@ -25,8 +26,16 @@ window.addEventListener('load', function() {
             Sound.setSoundState(false);
             this.style.opacity = "0.2";
         }
-    })
+    });
 
+    window.addEventListener('mousedown', handleClick);
+    window.addEventListener('resize', () => {
+        initData();
+    });
+    window.addEventListener('mousemove', function (e) {
+        mousePosition.x = e.x;
+        mousePosition.y = e.y;
+    })
 
     let timeToNextBox = 0;
     let boxInterval = 1500;
@@ -41,6 +50,11 @@ window.addEventListener('load', function() {
     let ctx;
     let collisionCanvas;
     let collisionCtx;
+
+    let mousePosition = {
+        x: 0,
+        y: 0
+    }
 
     function initData() {
         canvas = document.getElementById('gameCanvas');
@@ -58,10 +72,6 @@ window.addEventListener('load', function() {
     }
 
     initData();
-
-    window.addEventListener('resize', () => {
-        initData();
-    });
 
     function drawTip() {
         ctx.save();
@@ -82,10 +92,17 @@ window.addEventListener('load', function() {
         shoots = 0;
         flyBoxes = [];
         explosions = [];
+        toggleCursor();
         animate(0);
     }
 
-
+    function toggleCursor(on = false) {
+        if (on) {
+            document.body.style.cursor = 'auto';
+        } else {
+            document.body.style.cursor = 'none';
+        }
+    }
 
     let explosions = [];
 
@@ -116,8 +133,6 @@ window.addEventListener('load', function() {
         }
     }
 
-    window.addEventListener('mousedown', handleClick);
-
     function handleClick(e) {
         if (gameOver) {
             resetLevel();
@@ -141,7 +156,9 @@ window.addEventListener('load', function() {
     }
 
 
-    function drawGameOver() {
+    function handleGameOver() {
+        toggleCursor(true);
+
         ctx.save();
         ctx.textAlign = 'center';
 
@@ -163,6 +180,10 @@ window.addEventListener('load', function() {
     function onGameOver() {
         setGameOverState(true);
     }
+
+
+
+    const scope = new Scope(mousePosition.x,mousePosition.y, ctx);
 
     function animate(timestamp) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -192,13 +213,16 @@ window.addEventListener('load', function() {
         arrayForUpdateDraw.forEach(object => object.update(deltaTime));
         arrayForUpdateDraw.forEach(object => object.draw());
 
+        scope.update(mousePosition.x, mousePosition.y);
+        scope.draw();
+
         flyBoxes = flyBoxes.filter(object => !object.markedForDeletion);
         explosions = explosions.filter(object => !object.markedForDeletion);
 
         if (!gameOver) {
             requestAnimationFrame(animate);
         } else {
-            drawGameOver();
+            handleGameOver();
         }
     }
 
