@@ -1,12 +1,15 @@
 <!DOCTYPE html>
+<html lang="en">
 <head>
+    <title>Fly box hunting | Sergey Levkovich</title>
     <% for (var css in htmlWebpackPlugin.options.files.css) { %>
         <link href="<%= htmlWebpackPlugin.options.files.css[css] %>" rel="stylesheet">
     <% } %>
+    <link rel="icon" type="image/png" href="public/assets/images/fly-box.png" />
 </head>
 <body>
 <canvas id="collisionCanvas"></canvas>
 <canvas id="gameCanvas"></canvas>
-<img id="soundToggle" src="./public/assets/images/speaker_Icon.svg" alt="turn on/off sound" />
+<img id="soundToggle" class="no-select" src="./public/assets/images/speaker_Icon.svg" alt="turn on/off sound" />
 </body>
 </html>
