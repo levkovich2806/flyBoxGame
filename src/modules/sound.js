@@ -13,14 +13,11 @@ class CustomAudio {
     }
 
     initAudioAndPlay(name) {
-        this.initAudio(name);
+        if (!this.soundState) {
+            return;
+        }
 
-        // if (this.soundState && Object.hasOwn(this.map, name)) {
-        //     const sound = new Audio(this.map[name].path);
-        //     return sound.play();
-        // }
-        //
-        // return Promise.resolve();
+        this.initAudio(name);
         return this.play(name);
     }
 
