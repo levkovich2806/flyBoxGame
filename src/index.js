@@ -116,7 +116,9 @@ window.addEventListener('load', function() {
         }
     }
 
-    window.addEventListener('click', function(e) {
+    window.addEventListener('mousedown', handleClick);
+
+    function handleClick(e) {
         if (gameOver) {
             resetLevel();
             return;
@@ -136,8 +138,7 @@ window.addEventListener('load', function() {
                 explosions.push(new Explosion(object.x, object.y, object.width, ctx));
             }
         })
-    })
-
+    }
 
 
     function drawGameOver() {
