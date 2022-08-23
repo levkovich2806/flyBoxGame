@@ -33,6 +33,7 @@ window.addEventListener('load', function() {
     });
 
     window.addEventListener('mousedown', handleClick);
+    window.addEventListener('touchstart', handleClick);
     window.addEventListener('resize', () => {
         initData();
     });
