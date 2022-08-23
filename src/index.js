@@ -3,6 +3,7 @@ import FlyBox from './modules/flyBox';
 import Sound from './modules/sound';
 import Scope from './modules/scope';
 import Bullets from "./modules/bullets";
+import {takeXY} from "./utils";
 
 const SHOT = 'shot';
 const GAME_OVER = 'gameover';
@@ -32,8 +33,7 @@ window.addEventListener('load', function() {
         }
     });
 
-    window.addEventListener('mousedown', handleClick);
-    window.addEventListener('touchstart', handleClick);
+    window.addEventListener('click',handleClick);
     window.addEventListener('resize', () => {
         initData();
     });
@@ -152,18 +152,19 @@ window.addEventListener('load', function() {
         }
     }
 
-    function handleClick(e) {
+    function handleClick(e, eventName) {
+        const {x,y} = takeXY(e);
+
         if (gameOver) {
             resetLevel();
             return;
         }
 
-        if (isReloading) {
+        if (isReloading || typeof x !== 'number' || typeof y !== 'number') {
             return;
         }
 
-
-        const detectPixelColor = collisionCtx.getImageData(e.x, e.y, 1, 1);
+        const detectPixelColor = collisionCtx.getImageData(x, y, 1, 1);
         const pc = detectPixelColor?.data;
 
         emptyBullets++;
