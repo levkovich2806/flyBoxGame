@@ -38,8 +38,8 @@ window.addEventListener('load', function() {
         initData();
     });
     window.addEventListener('mousemove', function (e) {
-        mousePosition.x = e.x;
-        mousePosition.y = e.y;
+        mousePosition.x = e.x - canvasPosition.left;
+        mousePosition.y = e.y - canvasPosition.top;
     })
     // document.addEventListener('keydown', (e) => {
     //     const {code} = e
@@ -68,6 +68,8 @@ window.addEventListener('load', function() {
         y: 0
     }
 
+    let canvasPosition;
+
     let bulletsCount = 10;
     let emptyBullets = 0;
     let isReloading = false;
@@ -83,6 +85,8 @@ window.addEventListener('load', function() {
         collisionCtx = collisionCanvas.getContext('2d');
         collisionCanvas.width = window.innerWidth;
         collisionCanvas.height = window.innerHeight;
+
+        canvasPosition = canvas.getBoundingClientRect();
 
         ctx.font = '40px Impact';
         drawTip();
@@ -152,8 +156,11 @@ window.addEventListener('load', function() {
         }
     }
 
-    function handleClick(e, eventName) {
-        const {x,y} = takeXY(e);
+    function handleClick(e) {
+        let {x,y} = takeXY(e);
+
+        x = x - canvasPosition.left;
+        y = y - canvasPosition.top;
 
         if (gameOver) {
             resetLevel();
@@ -221,7 +228,7 @@ window.addEventListener('load', function() {
     }
 
     const scope = new Scope(mousePosition.x,mousePosition.y, ctx);
-    const bullets = new Bullets({x: 10, y: canvas.height - 100, ctx, emptyBullets, bulletsCount})
+    const bullets = new Bullets({x: 10, y: canvas.height - 70, ctx, emptyBullets, bulletsCount})
 
     function animate(timestamp) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -251,7 +258,7 @@ window.addEventListener('load', function() {
         arrayForUpdateDraw.forEach(object => object.update(deltaTime));
         arrayForUpdateDraw.forEach(object => object.draw());
 
-        scope.update(mousePosition.x, mousePosition.y);
+        scope.update(mousePosition.x, mousePosition.y, timestamp);
         scope.draw();
 
         bullets.update(emptyBullets);
@@ -265,7 +272,19 @@ window.addEventListener('load', function() {
         } else {
             handleGameOver();
         }
+
+        ctx.beginPath();
+        ctx.moveTo(0, 100);
+        ctx.lineTo(canvas.width, 100);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(0, canvas.height - 100);
+        ctx.lineTo(canvas.width, canvas.height - 100);
+        ctx.stroke();
     }
 
     drawTip();
+
+
 })

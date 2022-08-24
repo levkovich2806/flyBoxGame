@@ -11,13 +11,24 @@ export default class Scope {
         this.ctx = ctx;
 
         this.image = new Image();
-        this.image.src = 'public/assets/images/scope.png'
+        this.image.src = 'public/assets/images/scope.png';
+
+        this.lastTime = 0;
+        this.interval = 1000/60;
+        this.timer = 0;
     }
 
-    update(x,y) {
-        // console.log(x, y);
-        this.x = x;
-        this.y = y;
+    update(x, y, timeStamp) {
+        const deltaTime = timeStamp - this.lastTime;
+        this.lastTime = timeStamp;
+
+        if (this.timer > this.interval) {
+            this.x = x;
+            this.y = y;
+            this.timer = 0;
+        } else {
+            this.timer += deltaTime;
+        }
     }
 
     draw() {
