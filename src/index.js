@@ -8,6 +8,9 @@ import {takeXY} from "./utils";
 const SHOT = 'shot';
 const GAME_OVER = 'gameover';
 const RELOAD = 'RELOAD';
+const MAX_FLY_BOX_INITIAL_COUNT = 5;
+const GAME_SPEED_INITIAL = 1;
+const INCREASE_SPEED_FREQUENCY = 10;
 
 window.addEventListener('load', function() {
     let soundIsOn = false;
@@ -62,6 +65,8 @@ window.addEventListener('load', function() {
     let ctx;
     let collisionCanvas;
     let collisionCtx;
+    let backgroundCanvas;
+    let backgroundCtx;
 
     let mousePosition = {
         x: 0,
@@ -75,6 +80,9 @@ window.addEventListener('load', function() {
     let isReloading = false;
     let reloadDuration = 3;
 
+    let gameSpeed = GAME_SPEED_INITIAL;
+    let maxFlyBoxCount = MAX_FLY_BOX_INITIAL_COUNT;
+
     function initData() {
         canvas = document.getElementById('gameCanvas');
         ctx = canvas.getContext('2d');
@@ -86,10 +94,16 @@ window.addEventListener('load', function() {
         collisionCanvas.width = window.innerWidth;
         collisionCanvas.height = window.innerHeight;
 
+        backgroundCanvas = document.getElementById('backgroundCanvas');
+        backgroundCtx = backgroundCanvas.getContext('2d');
+        backgroundCanvas.width = window.innerWidth;
+        backgroundCanvas.height = window.innerHeight;
+
         canvasPosition = canvas.getBoundingClientRect();
 
         ctx.font = '40px Impact';
         drawTip();
+        drawBackground();
     }
 
     initData();
@@ -100,9 +114,9 @@ window.addEventListener('load', function() {
         ctx.textAlign = 'center';
 
         ctx.fillStyle = 'black';
-        ctx.fillText(`Click/touch to start`, canvas.width / 2 - 1, canvas.height - 21);
+        ctx.fillText(`Click/touch to start`, canvas.width / 2 - 1, canvas.height - 31);
         ctx.fillStyle = 'white';
-        ctx.fillText(`Click/touch to start`, canvas.width / 2, canvas.height - 20);
+        ctx.fillText(`Click/touch to start`, canvas.width / 2, canvas.height - 30);
 
         ctx.restore();
     }
@@ -114,6 +128,8 @@ window.addEventListener('load', function() {
         flyBoxes = [];
         explosions = [];
         emptyBullets = 0;
+        maxFlyBoxCount = MAX_FLY_BOX_INITIAL_COUNT;
+        gameSpeed = GAME_SPEED_INITIAL;
         isReloading = false;
         toggleCursor();
         animate(0);
@@ -130,9 +146,9 @@ window.addEventListener('load', function() {
     let explosions = [];
 
     function drawScore() {
-        ctx.fillStyle = 'black';
+        ctx.fillStyle = 'lightGreen';
         ctx.fillText(`Score: ${score}`, 10, 40);
-        ctx.fillStyle = 'white';
+        ctx.fillStyle = 'black';
         ctx.fillText(`Score: ${score}`, 12, 42);
 
         if (shoots) {
@@ -140,16 +156,16 @@ window.addEventListener('load', function() {
 
             ctx.font = '20px Impact';
 
-            ctx.fillStyle = 'black';
+            ctx.fillStyle = 'lightGreen';
             ctx.fillText(`Shots: ${shoots}`, 10, 70);
-            ctx.fillStyle = 'white';
+            ctx.fillStyle = 'black';
             ctx.fillText(`Shots: ${shoots}`, 12, 72);
 
             const accuracy = Math.floor(score / shoots * 100);
 
-            ctx.fillStyle = 'black';
+            ctx.fillStyle = 'lightGreen';
             ctx.fillText(`Accuracy: ${accuracy}%`, 10, 90);
-            ctx.fillStyle = 'white';
+            ctx.fillStyle = 'black';
             ctx.fillText(`Accuracy: ${accuracy}%`, 12, 92);
 
             ctx.restore();
@@ -189,7 +205,12 @@ window.addEventListener('load', function() {
                 score++;
                 explosions.push(new Explosion(object.x, object.y, object.width, ctx));
             }
-        })
+        });
+
+        if (score % INCREASE_SPEED_FREQUENCY === 0) {
+            maxFlyBoxCount++;
+            gameSpeed++;
+        }
     }
 
     function handleReload() {
@@ -227,6 +248,14 @@ window.addEventListener('load', function() {
         setGameOverState(true);
     }
 
+    function drawBackground() {
+        const backGroundImage = new Image();
+        backGroundImage.src = 'public/assets/images/sky_background_green_hills.png';
+        backGroundImage.onload = function() {
+            backgroundCtx.drawImage(backGroundImage, 0, 0, 2826, 1536, 0, 0, canvas.width, canvas.height);
+        }
+    }
+
     const scope = new Scope(mousePosition.x,mousePosition.y, ctx);
     const bullets = new Bullets({x: 10, y: canvas.height - 70, ctx, emptyBullets, bulletsCount})
 
@@ -238,12 +267,13 @@ window.addEventListener('load', function() {
         lastTime = timestamp;
         timeToNextBox += deltaTime;
 
-        if (timeToNextBox > boxInterval) {
+        if (timeToNextBox > boxInterval && flyBoxes.length <= maxFlyBoxCount) {
             flyBoxes.push(new FlyBox({
                 ctx,
                 canvas,
                 collisionCtx,
-                handleGameOver: onGameOver
+                handleGameOver: onGameOver,
+                gameSpeed
             }));
             timeToNextBox = 0;
             flyBoxes.sort(function(a, b) {
@@ -272,19 +302,7 @@ window.addEventListener('load', function() {
         } else {
             handleGameOver();
         }
-
-        ctx.beginPath();
-        ctx.moveTo(0, 100);
-        ctx.lineTo(canvas.width, 100);
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.moveTo(0, canvas.height - 100);
-        ctx.lineTo(canvas.width, canvas.height - 100);
-        ctx.stroke();
     }
 
     drawTip();
-
-
 })

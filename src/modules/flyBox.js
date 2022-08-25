@@ -1,12 +1,12 @@
 const PADDING = 100;
 
 export default class FlyBox {
-    constructor({ctx, canvas, collisionCtx, handleGameOver}) {
+    constructor({ctx, canvas, collisionCtx, handleGameOver, gameSpeed}) {
         this.ctx = ctx;
         this.collisionCtx = collisionCtx;
         this.handleGameOver = handleGameOver;
         this.canvas = canvas;
-
+        this.gameSpeed = gameSpeed;
 
         this.spriteWidth = 259;
         this.spriteHeight = 146;
@@ -25,8 +25,8 @@ export default class FlyBox {
             this.y = canvas.height - this.height - PADDING;
         }
 
-        this.directionX = Math.random() * 5;
-        this.directionY = Math.random() / 2;
+        this.directionX = Math.random() * 2 + this.gameSpeed;
+        this.directionY = Math.random();
 
         this.markedForDeletion = false;
 
