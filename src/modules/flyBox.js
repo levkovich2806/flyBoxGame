@@ -26,7 +26,7 @@ export default class FlyBox {
         }
 
         this.directionX = Math.random() * 5;
-        this.directionY = Math.random() * 5;
+        this.directionY = Math.random() / 2;
 
         this.markedForDeletion = false;
 
