@@ -22,7 +22,7 @@ window.addEventListener('load', function() {
     Sound.addAudio(GAME_OVER, 'public/assets/sounds/gameOver.ogg');
 
     const soundToggle = document.getElementById("soundToggle");
-    soundToggle.addEventListener('mousedown', function(e) {
+    soundToggle.addEventListener('click', function(e) {
         e.stopPropagation();
 
         if (!soundIsOn) {
