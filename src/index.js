@@ -3,7 +3,8 @@ import FlyBox from './modules/flyBox';
 import Sound from './modules/sound';
 import Scope from './modules/scope';
 import Bullets from "./modules/bullets";
-import {takeXY} from "./utils";
+import {dateHelperFactory, takeXY} from "./utils";
+import {addScore, getScores} from "./services/scores";
 
 const SHOT = 'shot';
 const GAME_OVER = 'gameover';
@@ -14,6 +15,7 @@ const INCREASE_SPEED_FREQUENCY = 10;
 
 window.addEventListener('load', function() {
     let soundIsOn = false;
+    let isLogged = false;
 
     Sound.addAudio(SHOT, 'public/assets/sounds/gunShot.mp3');
     Sound.initAudio(SHOT);
@@ -36,7 +38,7 @@ window.addEventListener('load', function() {
         }
     });
 
-    window.addEventListener('click',handleClick);
+    window.addEventListener('click', handleClick);
     window.addEventListener('resize', () => {
         initData();
     });
@@ -52,12 +54,15 @@ window.addEventListener('load', function() {
     //     }
     // });
 
+
+
     let timeToNextBox = 0;
     let boxInterval = 1500;
     let lastTime = 0;
 
     let flyBoxes = [];
     let score = 0;
+    let accuracy = 100;
     let shoots = 0;
     let gameOver = true;
 
@@ -102,11 +107,53 @@ window.addEventListener('load', function() {
         canvasPosition = canvas.getBoundingClientRect();
 
         ctx.font = '40px Impact';
-        drawTip();
+        // drawTip();
         drawBackground();
     }
 
     initData();
+
+    function showLoginForm() {
+        loginFormContainer.style.opacity = '1';
+    }
+
+    function hideLoginForm() {
+        loginFormContainer.style.opacity = '0';
+    }
+
+    function setUsername(username) {
+        try {
+            sessionStorage.setItem('username', username);
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    function getUsername() {
+        try {
+            return sessionStorage.getItem('username');
+        } catch (e) {
+            return 'Unknown';
+        }
+    }
+
+    const loginForm = document.getElementById('loginForm');
+    const loginFormContainer = document.getElementById('loginFormContainer');
+
+    loginForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const username = document.getElementById('username').value;
+        console.log('submit', username);
+
+        if (username) {
+            setUsername(username)
+
+            isLogged = true;
+            hideLoginForm();
+            resetLevel();
+        }
+    })
 
     function drawTip() {
         ctx.save();
@@ -124,6 +171,7 @@ window.addEventListener('load', function() {
     function resetLevel() {
         setGameOverState(false);
         score = 0;
+        accuracy = 100;
         shoots = 0;
         flyBoxes = [];
         explosions = [];
@@ -161,7 +209,7 @@ window.addEventListener('load', function() {
             ctx.fillStyle = 'black';
             ctx.fillText(`Shots: ${shoots}`, 12, 72);
 
-            const accuracy = Math.floor(score / shoots * 100);
+            accuracy = Math.floor(score / shoots * 100);
 
             ctx.fillStyle = 'lightGreen';
             ctx.fillText(`Accuracy: ${accuracy}%`, 10, 90);
@@ -173,15 +221,15 @@ window.addEventListener('load', function() {
     }
 
     function handleClick(e) {
+        if (gameOver && isLogged) {
+            resetLevel();
+            return;
+        }
+
         let {x,y} = takeXY(e);
 
         x = x - canvasPosition.left;
         y = y - canvasPosition.top;
-
-        if (gameOver) {
-            resetLevel();
-            return;
-        }
 
         if (isReloading || typeof x !== 'number' || typeof y !== 'number') {
             return;
@@ -238,6 +286,8 @@ window.addEventListener('load', function() {
         Sound.initAudioAndPlay(GAME_OVER);
 
         drawTip();
+
+        addScore({username: getUsername(), score, accuracy});
     }
 
     function setGameOverState(state) {
@@ -304,5 +354,25 @@ window.addEventListener('load', function() {
         }
     }
 
-    drawTip();
+    async function getAndShowScores() {
+        const scoresListContainer = document.getElementById('scoreList');
+        const scores = await getScores();
+        console.log("scores", scores);
+        if (scores && Array.isArray(scores)) {
+            scores.forEach(function(score, index) {
+                const date = dateHelperFactory()(new Date(score.__createdtime__));
+                scoresListContainer.innerHTML += `
+<tr>
+    <td>${index + 1}</td>
+    <td>${score.username}</td>
+    <td>${score.score}</td>
+    <td>${score.accuracy ?? 100}%</td>
+    <td>${date.values.dd}.${date.values.mm}.${date.values.yyyy} ${date.values.hh}:${date.values.mmi}</td>
+</tr>`;
+            })
+        }
+    }
+
+    // drawTip();
+    getAndShowScores();
 })

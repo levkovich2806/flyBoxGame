@@ -12,5 +12,35 @@
 <canvas id="collisionCanvas"></canvas>
 <canvas id="gameCanvas"></canvas>
 <img id="soundToggle" class="no-select" src="./public/assets/images/speaker_Icon.svg" alt="turn on/off sound" />
+<div id="loginFormContainer">
+    <form id="loginForm">
+        <label for="username">
+            Username:
+            <input id="username" type="text" placeholder="Your username" required autofocus />
+        </label>
+        <input type="submit" value="Start"/>
+    </form>
+    <div id="scoreTable">
+        <h3>Score list:</h3>
+        <table id="scoreList">
+            <th>
+                №
+            </th>
+            <th>
+                Username
+            </th>
+            <th>
+                Score
+            </th>
+            <th>
+                Accuracy
+            </th>
+            <th>
+                Date
+            </th>
+        </table>
+    </div>
+</div>
+
 </body>
 </html>
