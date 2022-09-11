@@ -35,3 +35,10 @@ export function dateHelperFactory() {
         toArr(...items) { return items.map(i => this.values[i]); },
     } );
 }
+
+// TODO we don't need really random - we can just increment by 1 colors and return each time a new rgb color
+export function getRandomColor() {
+    const randomColors = [Math.floor(Math.random() * 255), Math.floor(Math.random() * 255), Math.floor(Math.random() * 255)];
+    return {rgbString: `rgb(${randomColors[0]} , ${randomColors[1]}, ${randomColors[2]})`, randomColors};
+}
+

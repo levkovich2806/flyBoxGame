@@ -5,6 +5,7 @@ import Scope from './modules/scope';
 import Bullets from "./modules/bullets";
 import {dateHelperFactory, takeXY} from "./utils";
 import {addScore, getScores} from "./services/scores";
+import Gift from "./modules/gift";
 
 const SHOT = 'shot';
 const GAME_OVER = 'gameover';
@@ -54,6 +55,9 @@ window.addEventListener('load', function() {
     //     }
     // });
 
+    const giftCallbacks = {
+        bullets: addBullets
+    }
 
 
     let timeToNextBox = 0;
@@ -61,6 +65,8 @@ window.addEventListener('load', function() {
     let lastTime = 0;
 
     let flyBoxes = [];
+    let gifts = [];
+
     let score = 0;
     let accuracy = 100;
     let shoots = 0;
@@ -121,6 +127,10 @@ window.addEventListener('load', function() {
         loginFormContainer.style.opacity = '0';
     }
 
+    function addBullets() {
+        emptyBullets = Math.max(0, Math.floor(emptyBullets - (Math.random() * bulletsCount + 1)));
+    }
+
     function setUsername(username) {
         try {
             sessionStorage.setItem('username', username);
@@ -174,6 +184,7 @@ window.addEventListener('load', function() {
         accuracy = 100;
         shoots = 0;
         flyBoxes = [];
+        gifts = [];
         explosions = [];
         emptyBullets = 0;
         maxFlyBoxCount = MAX_FLY_BOX_INITIAL_COUNT;
@@ -220,6 +231,10 @@ window.addEventListener('load', function() {
         }
     }
 
+    function needToAddGift() {
+        return Math.random() < 0.1;
+    }
+
     function handleClick(e) {
         if (gameOver && isLogged) {
             resetLevel();
@@ -239,19 +254,41 @@ window.addEventListener('load', function() {
         const pc = detectPixelColor?.data;
 
         emptyBullets++;
+        Sound.initAudioAndPlay(SHOT);
+
+        let shotInGift = false;
+
+        gifts.forEach(object => {
+            if (object.randomColors[0] === pc[0] && object.randomColors[1] === pc[1] && object.randomColors[2] === pc[2]) {
+                shotInGift = true;
+                object.markedForDeletion = true;
+                const callback = giftCallbacks[object.type];
+
+                if (typeof callback === 'function') {
+                    callback();
+                }
+            }
+        })
 
         if (emptyBullets === bulletsCount) {
             handleReload();
         }
 
+        if (shotInGift) {
+            return;
+        }
+
         shoots++;
-        Sound.initAudioAndPlay(SHOT);
 
         flyBoxes.forEach(object => {
             if (object.randomColors[0] === pc[0] && object.randomColors[1] === pc[1] && object.randomColors[2] === pc[2]) {
                 object.markedForDeletion = true;
                 score++;
                 explosions.push(new Explosion(object.x, object.y, object.width, ctx));
+
+                if (needToAddGift()) {
+                    gifts.push(new Gift({ctx, collisionCtx, canvas, x: object.x + object.width / 2, y: object.y + object.height}));
+                }
             }
         });
 
@@ -333,7 +370,7 @@ window.addEventListener('load', function() {
 
         drawScore();
 
-        const arrayForUpdateDraw = [...explosions, ...flyBoxes];
+        const arrayForUpdateDraw = [...explosions, ...flyBoxes, ...gifts];
 
         arrayForUpdateDraw.forEach(object => object.update(deltaTime));
         arrayForUpdateDraw.forEach(object => object.draw());
@@ -346,6 +383,7 @@ window.addEventListener('load', function() {
 
         flyBoxes = flyBoxes.filter(object => !object.markedForDeletion);
         explosions = explosions.filter(object => !object.markedForDeletion);
+        gifts = gifts.filter(object => !object.markedForDeletion);
 
         if (!gameOver) {
             requestAnimationFrame(animate);
@@ -357,7 +395,7 @@ window.addEventListener('load', function() {
     async function getAndShowScores() {
         const scoresListContainer = document.getElementById('scoreList');
         const scores = await getScores();
-        console.log("scores", scores);
+
         if (scores && Array.isArray(scores)) {
             scores.forEach(function(score, index) {
                 const date = dateHelperFactory()(new Date(score.__createdtime__));

@@ -1,3 +1,5 @@
+import {getRandomColor} from "../utils";
+
 const PADDING = 100;
 
 export default class FlyBox {
@@ -39,8 +41,9 @@ export default class FlyBox {
         this.timeSinceFlap = 0;
         this.flapInterval = Math.random() * 50 + 100;
 
-        this.randomColors = [Math.floor(Math.random() * 255), Math.floor(Math.random() * 255), Math.floor(Math.random() * 255)];
-        this.color = `rgb(${this.randomColors[0]} , ${this.randomColors[1]}, ${this.randomColors[2]})`;
+        const {rgbString, randomColors} = getRandomColor();
+        this.color = rgbString;
+        this.randomColors = randomColors;
     }
 
     update(deltaTime) {
