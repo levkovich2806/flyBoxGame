@@ -37,6 +37,9 @@ module.exports = {
                 //         "entry": "../dist/main.js"
                 //     }
                 // }
+            },
+            minify: {
+                removeRedundantAttributes: false, // do not remove type="text"
             }
         }),
         new CopyPlugin({
