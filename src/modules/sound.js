@@ -1,29 +1,29 @@
 class CustomAudio {
-    map = {};
-    soundState;
+    map = {}
+    soundState
 
     constructor(soundState) {
-        this.soundState = soundState;
+        this.soundState = soundState
     }
 
     addAudio(name, path) {
         if (!Object.hasOwn(this.map, name)) {
-            this.map[name] = {path};
+            this.map[name] = {path}
         }
     }
 
     initAudioAndPlay(name) {
         if (!this.soundState) {
-            return;
+            return
         }
 
-        this.initAudio(name);
-        return this.play(name);
+        this.initAudio(name)
+        return this.play(name)
     }
 
     initAudio(name) {
         if (Object.hasOwn(this.map, name)) {
-            const sound = new Audio(this.map[name].path);
+            const sound = new Audio(this.map[name].path)
             this.map[name] = {
                 path: this.map[name].path,
                 sound
@@ -33,15 +33,15 @@ class CustomAudio {
 
     play(name) {
         if (this.soundState && Object.hasOwn(this.map, name)) {
-            return this.map[name].sound.play();
+            return this.map[name].sound.play()
         }
 
-        return Promise.resolve();
+        return Promise.resolve()
     }
 
     setSoundState(state) {
-        this.soundState = state;
+        this.soundState = state
     }
 }
 
-export default new CustomAudio();
+export default new CustomAudio()

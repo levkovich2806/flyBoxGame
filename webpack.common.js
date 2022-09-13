@@ -1,12 +1,12 @@
-const CopyPlugin = require("copy-webpack-plugin");
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const path = require("path");
+const CopyPlugin = require('copy-webpack-plugin')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const path = require('path')
 
 module.exports = {
-    entry: "./src/index.js",
+    entry: './src/index.js',
     output: {
-        path: path.join(__dirname, "dist"),
-        filename: "main.js",
+        path: path.join(__dirname, 'dist'),
+        filename: 'main.js',
     },
     performance: {
         hints: false,
@@ -14,15 +14,15 @@ module.exports = {
         maxAssetSize: 512000,
     },
     resolve: {
-        modules: ["node_modules"],
-        extensions: [".ts", ".tsx", ".js", "jsx", "json"],
+        modules: ['node_modules'],
+        extensions: ['.ts', '.tsx', '.js', 'jsx', 'json'],
     },
-    target: ["web", "es5"],
+    target: ['web', 'es5'],
     plugins: [
         new HtmlWebpackPlugin({
             // template: './src/index.ejs',
-            "files": {
-                "css": [ "style.css" ],
+            'files': {
+                'css': [ 'style.css' ],
                 // "js": [ "assets/head_bundle.js", "assets/main_bundle.js"],
                 // "chunks": {
                 //     "head": {
@@ -44,9 +44,9 @@ module.exports = {
         }),
         new CopyPlugin({
             patterns: [
-                { from: "public/assets", to: "public/assets" },
-                { from: "src/style.css"},
+                { from: 'public/assets', to: 'public/assets' },
+                { from: 'src/style.css'},
             ],
         }),
     ],
-};
+}
