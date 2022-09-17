@@ -14,8 +14,6 @@ export default class Bullets {
         this.fullBullet.src = 'public/assets/images/full.png'
         this.emptyBullet = new Image()
         this.emptyBullet.src = 'public/assets/images/empty.png'
-
-
     }
 
     update(emptyBullets) {

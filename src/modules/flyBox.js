@@ -46,13 +46,20 @@ export default class FlyBox {
         this.randomColors = randomColors
     }
 
-    update(deltaTime) {
+    update(deltaTime, {speedModificator}) {
         if (this.y < PADDING || this.y > this.canvas.height - this.height - PADDING) {
             this.directionY = this.directionY * -1
         }
 
-        this.x -= this.directionX
-        this.y += this.directionY
+        function withModificator(direction, speedModificator) {
+            return speedModificator ? speedModificator > 0 ? direction * speedModificator : direction / Math.abs(speedModificator) : direction
+        }
+
+        const xDelta = withModificator(this.directionX, speedModificator)
+        const yDelta = withModificator(this.directionY, speedModificator)
+
+        this.x -= xDelta
+        this.y += yDelta
 
         this.timeSinceFlap += deltaTime
 
