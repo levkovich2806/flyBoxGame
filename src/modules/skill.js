@@ -48,7 +48,7 @@ export default class Skill {
     }
 
     update(deltaTime) {
-        if (this.cooldownInProgress) {
+        if (this.cooldownInProgress && deltaTime > 0 && deltaTime < 50) {
             this.timeStamp += deltaTime
 
             if (this.timeStamp > 100) {
