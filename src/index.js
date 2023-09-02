@@ -3,10 +3,11 @@ import FlyBox from './modules/flyBox'
 import Sound from './modules/sound'
 import Scope from './modules/scope'
 import Bullets from './modules/bullets'
-import {dateHelperFactory, takeXY} from './utils'
-import {addScore, getScores} from './services/scores'
+import { dateHelperFactory, takeXY } from './utils'
+import { addScore, getScores } from './services/scores'
 import Gift from './modules/gift'
 import Skill from './modules/skill'
+import { getUsername, setUsername } from './utils/helpers'
 
 const SHOT = 'shot'
 const GAME_OVER = 'gameover'
@@ -17,8 +18,7 @@ const INCREASE_SPEED_FREQUENCY = 10
 const WIND_SPEED_MODIFICATOR = -2
 const WIND_SKILL_DURATION = 3000
 
-window.addEventListener('load', function() {
-    let soundIsOn = false
+window.addEventListener('load', function () {
     let isLogged = false
 
     Sound.addAudio(SHOT, 'public/assets/sounds/gunShot.mp3')
@@ -47,23 +47,8 @@ window.addEventListener('load', function() {
             imageSrc: 'public/assets/images/skills/wind.png',
             imageWidth: 512,
             imageHeight: 512,
-        }
+        },
     ]
-
-    const soundToggle = document.getElementById('soundToggle')
-    soundToggle.addEventListener('click', function(e) {
-        e.stopPropagation()
-
-        if (!soundIsOn) {
-            soundIsOn = true
-            Sound.setSoundState(true)
-            this.style.opacity = '1'
-        } else {
-            soundIsOn = false
-            Sound.setSoundState(false)
-            this.style.opacity = '0.2'
-        }
-    })
 
     window.addEventListener('click', handleClick)
     window.addEventListener('resize', () => {
@@ -73,13 +58,13 @@ window.addEventListener('load', function() {
         mousePosition.x = e.x - canvasPosition.left
         mousePosition.y = e.y - canvasPosition.top
     })
-    document.addEventListener('keydown', (e) => {
-        const {code} = e
+    document.addEventListener('keydown', e => {
+        const { code } = e
 
         if (!gameOver) {
             SKILLS.forEach(function (skill) {
                 if (skill.key === code) {
-                    const skillObject = skills.find(function(s) {
+                    const skillObject = skills.find(function (s) {
                         return s.type === skill.type
                     })
                     if (skillObject) {
@@ -91,9 +76,8 @@ window.addEventListener('load', function() {
     })
 
     const giftCallbacks = {
-        bullets: addBullets
+        bullets: addBullets,
     }
-
 
     let timeToNextBox = 0
     let boxInterval = 1500
@@ -117,7 +101,7 @@ window.addEventListener('load', function() {
 
     let mousePosition = {
         x: 0,
-        y: 0
+        y: 0,
     }
 
     let canvasPosition
@@ -158,6 +142,13 @@ window.addEventListener('load', function() {
 
     initData()
 
+    function addBullets() {
+        emptyBullets = Math.max(0, Math.floor(emptyBullets - (Math.random() * bulletsCount + 1)))
+    }
+
+    const loginForm = document.getElementById('loginForm')
+    const loginFormContainer = document.getElementById('loginFormContainer')
+
     function showLoginForm() {
         loginFormContainer.style.opacity = '1'
     }
@@ -166,30 +157,7 @@ window.addEventListener('load', function() {
         loginFormContainer.style.opacity = '0'
     }
 
-    function addBullets() {
-        emptyBullets = Math.max(0, Math.floor(emptyBullets - (Math.random() * bulletsCount + 1)))
-    }
-
-    function setUsername(username) {
-        try {
-            sessionStorage.setItem('username', username)
-        } catch (e) {
-            console.log(e)
-        }
-    }
-
-    function getUsername() {
-        try {
-            return sessionStorage.getItem('username')
-        } catch (e) {
-            return 'Unknown'
-        }
-    }
-
-    const loginForm = document.getElementById('loginForm')
-    const loginFormContainer = document.getElementById('loginFormContainer')
-
-    loginForm.addEventListener('submit', function(event) {
+    loginForm.addEventListener('submit', function (event) {
         event.preventDefault()
 
         const username = document.getElementById('username').value
@@ -261,7 +229,7 @@ window.addEventListener('load', function() {
             ctx.fillStyle = 'black'
             ctx.fillText(`Shots: ${shoots}`, 12, 72)
 
-            accuracy = Math.floor(score / shoots * 100)
+            accuracy = Math.floor((score / shoots) * 100)
 
             ctx.fillStyle = 'lightGreen'
             ctx.fillText(`Accuracy: ${accuracy}%`, 10, 90)
@@ -282,7 +250,7 @@ window.addEventListener('load', function() {
             return
         }
 
-        let {x,y} = takeXY(e)
+        let { x, y } = takeXY(e)
 
         x = x - canvasPosition.left
         y = y - canvasPosition.top
@@ -300,7 +268,11 @@ window.addEventListener('load', function() {
         let shotInGift = false
 
         gifts.forEach(object => {
-            if (object.randomColors[0] === pc[0] && object.randomColors[1] === pc[1] && object.randomColors[2] === pc[2]) {
+            if (
+                object.randomColors[0] === pc[0] &&
+                object.randomColors[1] === pc[1] &&
+                object.randomColors[2] === pc[2]
+            ) {
                 shotInGift = true
                 object.markedForDeletion = true
                 const callback = giftCallbacks[object.type]
@@ -331,13 +303,26 @@ window.addEventListener('load', function() {
 
     function killFlyBox(pixelInfoRGB = [], killAll = false) {
         flyBoxes.forEach(object => {
-            if (killAll || object.randomColors[0] === pixelInfoRGB[0] && object.randomColors[1] === pixelInfoRGB[1] && object.randomColors[2] === pixelInfoRGB[2]) {
+            if (
+                killAll ||
+                (object.randomColors[0] === pixelInfoRGB[0] &&
+                    object.randomColors[1] === pixelInfoRGB[1] &&
+                    object.randomColors[2] === pixelInfoRGB[2])
+            ) {
                 object.markedForDeletion = true
                 !killAll && score++
                 explosions.push(new Explosion(object.x, object.y, object.width, ctx))
 
                 if (needToAddGift()) {
-                    gifts.push(new Gift({ctx, collisionCtx, canvas, x: object.x + object.width / 2, y: object.y + object.height}))
+                    gifts.push(
+                        new Gift({
+                            ctx,
+                            collisionCtx,
+                            canvas,
+                            x: object.x + object.width / 2,
+                            y: object.y + object.height,
+                        })
+                    )
                 }
             }
         })
@@ -369,7 +354,7 @@ window.addEventListener('load', function() {
 
         drawTip()
 
-        addScore({username: getUsername(), score, accuracy})
+        addScore({ username: getUsername(), score, accuracy })
     }
 
     function setGameOverState(state) {
@@ -383,7 +368,7 @@ window.addEventListener('load', function() {
     function drawBackground() {
         const backGroundImage = new Image()
         backGroundImage.src = 'public/assets/images/sky_background_green_hills.png'
-        backGroundImage.onload = function() {
+        backGroundImage.onload = function () {
             backgroundCtx.drawImage(backGroundImage, 0, 0, 2826, 1536, 0, 0, canvas.width, canvas.height)
         }
     }
@@ -397,29 +382,40 @@ window.addEventListener('load', function() {
         this.callSkill()
         windIsActive = true
 
-        setTimeout(function() {
+        setTimeout(function () {
             windIsActive = false
         }, WIND_SKILL_DURATION)
     }
 
-    const scope = new Scope(mousePosition.x,mousePosition.y, ctx)
-    const bullets = new Bullets({x: 10, y: canvas.height - 70, ctx, emptyBullets, bulletsCount})
+    // Прицел
+    const scope = new Scope(mousePosition.x, mousePosition.y, ctx)
+    // Пули доступные игроку
+    const bullets = new Bullets({
+        x: 10,
+        y: canvas.height - 70,
+        ctx,
+        emptyBullets,
+        bulletsCount,
+    })
+    // Перезарядка
 
     function initSkills() {
         if (skills.length > 0) {
-            skills.forEach(function(skill) {
+            skills.forEach(function (skill) {
                 skill.reset()
             })
         } else {
-            SKILLS.forEach(function(skill, index) {
-                skills.push(new Skill({
-                    ...skill,
-                    x: canvas.width,
-                    y: 10,
-                    ctx,
-                    canvas,
-                    index: index + 1,
-                }))
+            SKILLS.forEach(function (skill, index) {
+                skills.push(
+                    new Skill({
+                        ...skill,
+                        x: canvas.width,
+                        y: 10,
+                        ctx,
+                        canvas,
+                        index: index + 1,
+                    })
+                )
             })
         }
     }
@@ -433,15 +429,17 @@ window.addEventListener('load', function() {
         timeToNextBox += deltaTime
 
         if (timeToNextBox > boxInterval && flyBoxes.length <= maxFlyBoxCount) {
-            flyBoxes.push(new FlyBox({
-                ctx,
-                canvas,
-                collisionCtx,
-                handleGameOver: onGameOver,
-                gameSpeed
-            }))
+            flyBoxes.push(
+                new FlyBox({
+                    ctx,
+                    canvas,
+                    collisionCtx,
+                    handleGameOver: onGameOver,
+                    gameSpeed,
+                })
+            )
             timeToNextBox = 0
-            flyBoxes.sort(function(a, b) {
+            flyBoxes.sort(function (a, b) {
                 return a.width - b.width
             })
         }
@@ -450,7 +448,11 @@ window.addEventListener('load', function() {
 
         const arrayForUpdateDraw = [...explosions, ...flyBoxes, ...gifts, ...skills]
 
-        arrayForUpdateDraw.forEach(object => object.update(deltaTime, {speedModificator: windIsActive && WIND_SPEED_MODIFICATOR}))
+        arrayForUpdateDraw.forEach(object =>
+            object.update(deltaTime, {
+                speedModificator: windIsActive && WIND_SPEED_MODIFICATOR,
+            })
+        )
         arrayForUpdateDraw.forEach(object => object.draw())
 
         scope.update(mousePosition.x, mousePosition.y, timestamp)
@@ -475,7 +477,7 @@ window.addEventListener('load', function() {
         const scores = await getScores()
 
         if (scores && Array.isArray(scores)) {
-            scores.forEach(function(score, index) {
+            scores.forEach(function (score, index) {
                 const date = dateHelperFactory()(new Date(score.__createdtime__))
                 scoresListContainer.innerHTML += `
 <tr>
