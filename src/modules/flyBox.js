@@ -1,12 +1,12 @@
-import {getRandomColor} from '../utils'
+import { getRandomColor } from '../utils'
 
 const PADDING = 100
 
 export default class FlyBox {
-    constructor({ctx, canvas, collisionCtx, handleGameOver, gameSpeed}) {
+    constructor({ ctx, canvas, collisionCtx, handleBoxOutFromField, gameSpeed }) {
         this.ctx = ctx
         this.collisionCtx = collisionCtx
-        this.handleGameOver = handleGameOver
+        this.handleBoxOutFromField = handleBoxOutFromField
         this.canvas = canvas
         this.gameSpeed = gameSpeed
 
@@ -41,18 +41,22 @@ export default class FlyBox {
         this.timeSinceFlap = 0
         this.flapInterval = Math.random() * 50 + 100
 
-        const {rgbString, randomColors} = getRandomColor()
+        const { rgbString, randomColors } = getRandomColor()
         this.color = rgbString
         this.randomColors = randomColors
     }
 
-    update(deltaTime, {speedModificator}) {
+    update(deltaTime, { speedModificator }) {
         if (this.y < PADDING || this.y > this.canvas.height - this.height - PADDING) {
             this.directionY = this.directionY * -1
         }
 
         function withModificator(direction, speedModificator) {
-            return speedModificator ? speedModificator > 0 ? direction * speedModificator : direction / Math.abs(speedModificator) : direction
+            return speedModificator
+                ? speedModificator > 0
+                    ? direction * speedModificator
+                    : direction / Math.abs(speedModificator)
+                : direction
         }
 
         const xDelta = withModificator(this.directionX, speedModificator)
@@ -74,12 +78,22 @@ export default class FlyBox {
         }
 
         if (this.x < 0 - this.width) {
-            typeof this.handleGameOver === 'function' && this.handleGameOver()
+            typeof this.handleBoxOutFromField === 'function' && this.handleBoxOutFromField()
         }
     }
     draw() {
         this.collisionCtx.fillStyle = this.color
         this.collisionCtx.fillRect(this.x, this.y, this.width, this.height)
-        this.ctx.drawImage(this.image, this.frame * this.spriteWidth, 0, this.spriteWidth, this.spriteHeight, this.x, this.y, this.width, this.height)
+        this.ctx.drawImage(
+            this.image,
+            this.frame * this.spriteWidth,
+            0,
+            this.spriteWidth,
+            this.spriteHeight,
+            this.x,
+            this.y,
+            this.width,
+            this.height
+        )
     }
 }

@@ -8,25 +8,18 @@ import { addScore, getScores } from './services/scores'
 import Gift from './modules/gift'
 import Skill from './modules/skill'
 import { getUsername, setUsername } from './utils/helpers'
-
-const SHOT = 'shot'
-const GAME_OVER = 'gameover'
-const RELOAD = 'RELOAD'
-const MAX_FLY_BOX_INITIAL_COUNT = 5
-const GAME_SPEED_INITIAL = 1
-const INCREASE_SPEED_FREQUENCY = 10
-const WIND_SPEED_MODIFICATOR = -2
-const WIND_SKILL_DURATION = 3000
+import {
+    GAME_OVER,
+    INCREASE_SPEED_FREQUENCY,
+    RELOAD,
+    SHOT,
+    WIND_SKILL_DURATION,
+    WIND_SPEED_MODIFICATOR,
+} from './consts'
+import Game from './modules/game'
+import Player from './modules/player'
 
 window.addEventListener('load', function () {
-    let isLogged = false
-
-    Sound.addAudio(SHOT, 'public/assets/sounds/gunShot.mp3')
-    Sound.initAudio(SHOT)
-    Sound.addAudio(RELOAD, 'public/assets/sounds/reload.mp3')
-    Sound.initAudio(RELOAD)
-    Sound.addAudio(GAME_OVER, 'public/assets/sounds/gameOver.ogg')
-
     const SKILLS = [
         {
             type: 'armagedon',
@@ -61,7 +54,7 @@ window.addEventListener('load', function () {
     document.addEventListener('keydown', e => {
         const { code } = e
 
-        if (!gameOver) {
+        if (!Game.gameOver) {
             SKILLS.forEach(function (skill) {
                 if (skill.key === code) {
                     const skillObject = skills.find(function (s) {
@@ -87,11 +80,6 @@ window.addEventListener('load', function () {
     let gifts = []
     let skills = []
 
-    let score = 0
-    let accuracy = 100
-    let shoots = 0
-    let gameOver = true
-
     let canvas
     let ctx
     let collisionCanvas
@@ -110,9 +98,6 @@ window.addEventListener('load', function () {
     let emptyBullets = 0
     let isReloading = false
     let reloadDuration = 3
-
-    let gameSpeed = GAME_SPEED_INITIAL
-    let maxFlyBoxCount = MAX_FLY_BOX_INITIAL_COUNT
 
     // Skills
     let windIsActive = false
@@ -164,7 +149,7 @@ window.addEventListener('load', function () {
         if (username) {
             setUsername(username)
 
-            isLogged = true
+            Game.setIsLogged(true)
             hideLoginForm()
             resetLevel()
         }
@@ -184,16 +169,12 @@ window.addEventListener('load', function () {
     }
 
     function resetLevel() {
-        setGameOverState(false)
-        score = 0
-        accuracy = 100
-        shoots = 0
+        Game.reset()
+        Player.reset()
         flyBoxes = []
         gifts = []
         explosions = []
         emptyBullets = 0
-        maxFlyBoxCount = MAX_FLY_BOX_INITIAL_COUNT
-        gameSpeed = GAME_SPEED_INITIAL
         isReloading = false
         windIsActive = false
         toggleCursor()
@@ -215,26 +196,24 @@ window.addEventListener('load', function () {
 
     function drawScore() {
         ctx.fillStyle = 'lightGreen'
-        ctx.fillText(`Score: ${score}`, 10, 40)
+        ctx.fillText(`Score: ${Player.score}`, 10, 40)
         ctx.fillStyle = 'black'
-        ctx.fillText(`Score: ${score}`, 12, 42)
+        ctx.fillText(`Score: ${Player.score}`, 12, 42)
 
-        if (shoots) {
+        if (Player.shoots) {
             ctx.save()
 
             ctx.font = '20px Impact'
 
             ctx.fillStyle = 'lightGreen'
-            ctx.fillText(`Shots: ${shoots}`, 10, 70)
+            ctx.fillText(`Shots: ${Player.shoots}`, 10, 70)
             ctx.fillStyle = 'black'
-            ctx.fillText(`Shots: ${shoots}`, 12, 72)
-
-            accuracy = Math.floor((score / shoots) * 100)
+            ctx.fillText(`Shots: ${Player.shoots}`, 12, 72)
 
             ctx.fillStyle = 'lightGreen'
-            ctx.fillText(`Accuracy: ${accuracy}%`, 10, 90)
+            ctx.fillText(`Accuracy: ${Player.accuracy}%`, 10, 90)
             ctx.fillStyle = 'black'
-            ctx.fillText(`Accuracy: ${accuracy}%`, 12, 92)
+            ctx.fillText(`Accuracy: ${Player.accuracy}%`, 12, 92)
 
             ctx.restore()
         }
@@ -245,7 +224,11 @@ window.addEventListener('load', function () {
     }
 
     function handleClick(e) {
-        if (gameOver && isLogged) {
+        if (!Game.isLogged) {
+            return
+        }
+
+        if (Game.gameOver && Game.isLogged) {
             resetLevel()
             return
         }
@@ -291,13 +274,13 @@ window.addEventListener('load', function () {
             return
         }
 
-        shoots++
+        Player.increaseShots()
 
         killFlyBox(pc)
 
-        if (score % INCREASE_SPEED_FREQUENCY === 0) {
-            maxFlyBoxCount++
-            gameSpeed++
+        if (Player.score % INCREASE_SPEED_FREQUENCY === 0) {
+            Game.increaseFlyBoxCount()
+            Game.increaseGameSpeed()
         }
     }
 
@@ -310,7 +293,7 @@ window.addEventListener('load', function () {
                     object.randomColors[2] === pixelInfoRGB[2])
             ) {
                 object.markedForDeletion = true
-                !killAll && score++
+                !killAll && Player.increaseScore()
                 explosions.push(new Explosion(object.x, object.y, object.width, ctx))
 
                 if (needToAddGift()) {
@@ -354,15 +337,7 @@ window.addEventListener('load', function () {
 
         drawTip()
 
-        addScore({ username: getUsername(), score, accuracy })
-    }
-
-    function setGameOverState(state) {
-        gameOver = state
-    }
-
-    function onGameOver() {
-        setGameOverState(true)
+        addScore({ username: getUsername(), score: Player.score, accuracy: Player.accuracy })
     }
 
     function drawBackground() {
@@ -428,14 +403,14 @@ window.addEventListener('load', function () {
         lastTime = timestamp
         timeToNextBox += deltaTime
 
-        if (timeToNextBox > boxInterval && flyBoxes.length <= maxFlyBoxCount) {
+        if (timeToNextBox > boxInterval && flyBoxes.length <= Game.maxFlyBoxCount) {
             flyBoxes.push(
                 new FlyBox({
                     ctx,
                     canvas,
                     collisionCtx,
-                    handleGameOver: onGameOver,
-                    gameSpeed,
+                    handleBoxOutFromField: () => Game.setGameOverState(true),
+                    gameSpeed: Game.gameSpeed,
                 })
             )
             timeToNextBox = 0
@@ -465,7 +440,7 @@ window.addEventListener('load', function () {
         explosions = explosions.filter(object => !object.markedForDeletion)
         gifts = gifts.filter(object => !object.markedForDeletion)
 
-        if (!gameOver) {
+        if (!Game.gameOver) {
             requestAnimationFrame(animate)
         } else {
             handleGameOver()

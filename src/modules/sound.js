@@ -1,3 +1,5 @@
+import { GAME_OVER, RELOAD, SHOT } from '../consts'
+
 class CustomAudio {
     map = {}
     soundState
@@ -26,6 +28,12 @@ class CustomAudio {
         } finally {
             this.setToggleStyle()
         }
+
+        this.addAudio(SHOT, 'public/assets/sounds/gunShot.mp3')
+        this.initAudio(SHOT)
+        this.addAudio(RELOAD, 'public/assets/sounds/reload.mp3')
+        this.initAudio(RELOAD)
+        this.addAudio(GAME_OVER, 'public/assets/sounds/gameOver.ogg')
     }
 
     setToggleStyle() {
