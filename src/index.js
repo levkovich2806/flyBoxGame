@@ -347,7 +347,7 @@ window.addEventListener('load', function () {
     // Пули доступные игроку
     const bullets = new Bullets({
         x: 10,
-        y: canvas.height - 70,
+        y: canvas.height - 80,
         ctx,
     })
     // Перезарядка
@@ -411,6 +411,7 @@ window.addEventListener('load', function () {
         scope.update(mousePosition.x, mousePosition.y, timestamp)
         scope.draw()
 
+        bullets.update(deltaTime)
         bullets.draw()
 
         flyBoxes = flyBoxes.filter(object => !object.markedForDeletion)

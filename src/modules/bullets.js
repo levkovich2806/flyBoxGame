@@ -1,13 +1,24 @@
 import Sound from './sound'
 import { RELOAD } from '../consts'
 
+const BULLETS_COUNT_INITIAL = 10
+const RELOAD_DURATION_INITIAL = 3
+
 export default class Bullets {
     _emptyBullets = 0
-    _bulletsCount = 10
-    _reloadDuration = 3
+    _bulletsCount = BULLETS_COUNT_INITIAL
+    _reloadDuration = RELOAD_DURATION_INITIAL
     _isReloading = false
+    _reloadProgress = 0
 
-    constructor({ x, y, emptyBullets = 0, bulletsCount = 10, reloadDuration = 3, ctx }) {
+    constructor({
+        x,
+        y,
+        emptyBullets = 0,
+        bulletsCount = BULLETS_COUNT_INITIAL,
+        reloadDuration = RELOAD_DURATION_INITIAL,
+        ctx,
+    }) {
         this.x = x
         this.y = y
         this._bulletsCount = bulletsCount
@@ -23,6 +34,8 @@ export default class Bullets {
         this.fullBullet.src = 'public/assets/images/full.png'
         this.emptyBullet = new Image()
         this.emptyBullet.src = 'public/assets/images/empty.png'
+
+        this.timeSinceLastReloadUpdate = 0
     }
 
     reset() {
@@ -73,6 +86,7 @@ export default class Bullets {
     reload() {
         Sound.play(RELOAD)
         this.setIsReloading(true)
+        this.setReloadProgress(0)
 
         setTimeout(() => {
             this._emptyBullets = 0
@@ -80,9 +94,25 @@ export default class Bullets {
         }, this._reloadDuration * 1000)
     }
 
-    // update(emptyBullets) {
-    //     this._emptyBullets = emptyBullets ?? 2
-    // }
+    update(deltatime) {
+        this.timeSinceLastReloadUpdate += deltatime
+
+        if (this.timeSinceLastReloadUpdate > this._reloadDuration * deltatime) {
+            this.timeSinceLastReloadUpdate = 0
+
+            if (this.isReloading && this.reloadProgress < 100) {
+                this.setReloadProgress(this.reloadProgress + 1)
+            }
+        }
+    }
+
+    get reloadProgress() {
+        return this._reloadProgress
+    }
+
+    setReloadProgress(percent) {
+        this._reloadProgress = percent
+    }
 
     draw() {
         const fullBullets = this.bulletsCount - this.emptyBullets
@@ -100,6 +130,24 @@ export default class Bullets {
                 this.width,
                 this.height
             )
+        }
+
+        this.drawReload()
+    }
+
+    drawReload() {
+        if (this.isReloading) {
+            const y = this.y + this.height + 10
+
+            const x = this.x + this.width * this.bulletsCount * (this.reloadProgress / 100)
+
+            this.ctx.strokeStyle = 'orange'
+            this.ctx.lineWidth = 3
+
+            this.ctx.beginPath()
+            this.ctx.moveTo(this.x, y)
+            this.ctx.lineTo(x, y)
+            this.ctx.stroke()
         }
     }
 }
