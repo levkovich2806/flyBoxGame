@@ -1,4 +1,4 @@
-import {getRandomColor} from '../utils'
+import { getRandomColor } from '../utils'
 
 const GIFTS = [
     {
@@ -7,12 +7,12 @@ const GIFTS = [
         spriteWidth: 432,
         spriteHeight: 370,
         asset: 'bullets.png',
-        type: 'bullets'
-    }
+        type: 'bullets',
+    },
 ]
 
 export default class Gift {
-    constructor({ctx, canvas, collisionCtx, x, y}) {
+    constructor({ ctx, canvas, collisionCtx, x, y }) {
         this.ctx = ctx
         this.collisionCtx = collisionCtx
         this.canvas = canvas
@@ -21,7 +21,7 @@ export default class Gift {
 
         this.markedForDeletion = false
 
-        const {rgbString, randomColors} = getRandomColor()
+        const { rgbString, randomColors } = getRandomColor()
         this.color = rgbString
         this.randomColors = randomColors
 
@@ -50,7 +50,16 @@ export default class Gift {
     draw() {
         this.collisionCtx.fillStyle = this.color
         this.collisionCtx.fillRect(this.x, this.y, this.width, this.height)
-        this.ctx.drawImage(this.image, 0, 0, this.spriteWidth, this.spriteHeight, this.x, this.y, this.width, this.height)
-
+        this.ctx.drawImage(
+            this.image,
+            0,
+            0,
+            this.spriteWidth,
+            this.spriteHeight,
+            this.x,
+            this.y,
+            this.width,
+            this.height
+        )
     }
 }

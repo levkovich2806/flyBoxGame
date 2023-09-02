@@ -69,7 +69,11 @@ window.addEventListener('load', function () {
     })
 
     const giftCallbacks = {
-        bullets: addBullets,
+        bullets: function () {
+            bullets.setEmptyBullets(
+                Math.max(0, Math.floor(bullets.emptyBullets - (Math.random() * bullets.bulletsCount + 1)))
+            )
+        },
     }
 
     let timeToNextBox = 0
@@ -93,11 +97,6 @@ window.addEventListener('load', function () {
     }
 
     let canvasPosition
-
-    let bulletsCount = 10
-    let emptyBullets = 0
-    let isReloading = false
-    let reloadDuration = 3
 
     // Skills
     let windIsActive = false
@@ -126,10 +125,6 @@ window.addEventListener('load', function () {
     }
 
     initData()
-
-    function addBullets() {
-        emptyBullets = Math.max(0, Math.floor(emptyBullets - (Math.random() * bulletsCount + 1)))
-    }
 
     const loginForm = document.getElementById('loginForm')
     const loginFormContainer = document.getElementById('loginFormContainer')
@@ -171,11 +166,10 @@ window.addEventListener('load', function () {
     function resetLevel() {
         Game.reset()
         Player.reset()
+        bullets.reset()
         flyBoxes = []
         gifts = []
         explosions = []
-        emptyBullets = 0
-        isReloading = false
         windIsActive = false
         toggleCursor()
         initSkills()
@@ -238,14 +232,14 @@ window.addEventListener('load', function () {
         x = x - canvasPosition.left
         y = y - canvasPosition.top
 
-        if (isReloading || typeof x !== 'number' || typeof y !== 'number') {
+        if (bullets.isReloading || typeof x !== 'number' || typeof y !== 'number') {
             return
         }
 
         const detectPixelColor = collisionCtx.getImageData(x, y, 1, 1)
         const pc = detectPixelColor?.data
 
-        emptyBullets++
+        bullets.increaseEmptyBullets()
         Sound.initAudioAndPlay(SHOT)
 
         let shotInGift = false
@@ -265,10 +259,6 @@ window.addEventListener('load', function () {
                 }
             }
         })
-
-        if (emptyBullets === bulletsCount) {
-            handleReload()
-        }
 
         if (shotInGift) {
             return
@@ -309,16 +299,6 @@ window.addEventListener('load', function () {
                 }
             }
         })
-    }
-
-    function handleReload() {
-        Sound.play(RELOAD)
-        isReloading = true
-
-        setTimeout(() => {
-            emptyBullets = 0
-            isReloading = false
-        }, reloadDuration * 1000)
     }
 
     function handleGameOver() {
@@ -369,8 +349,6 @@ window.addEventListener('load', function () {
         x: 10,
         y: canvas.height - 70,
         ctx,
-        emptyBullets,
-        bulletsCount,
     })
     // Перезарядка
 
@@ -433,7 +411,6 @@ window.addEventListener('load', function () {
         scope.update(mousePosition.x, mousePosition.y, timestamp)
         scope.draw()
 
-        bullets.update(emptyBullets)
         bullets.draw()
 
         flyBoxes = flyBoxes.filter(object => !object.markedForDeletion)
