@@ -1,6 +1,11 @@
 const CopyPlugin = require('copy-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const path = require('path')
+const webpack = require('webpack')
+
+const dotenv = require('dotenv').config({ path: __dirname + '/.env' })
+
+const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
 
 module.exports = {
     entry: './src/index.js',
@@ -20,33 +25,19 @@ module.exports = {
     target: ['web', 'es5'],
     plugins: [
         new HtmlWebpackPlugin({
-            // template: './src/index.ejs',
-            'files': {
-                'css': [ 'style.css' ],
-                // "js": [ "assets/head_bundle.js", "assets/main_bundle.js"],
-                // "chunks": {
-                //     "head": {
-                //         "entry": "assets/head_bundle.js",
-                //         "css": [ "main.css" ]
-                //     },
-                //     "main": {
-                //         "entry": "assets/main_bundle.js",
-                //         "css": []
-                //     },
-                //     "body": {
-                //         "entry": "../dist/main.js"
-                //     }
-                // }
+            files: {
+                css: ['style.css'],
             },
             minify: {
                 removeRedundantAttributes: false, // do not remove type="text"
-            }
+            },
         }),
         new CopyPlugin({
-            patterns: [
-                { from: 'public/assets', to: 'public/assets' },
-                { from: 'src/style.css'},
-            ],
+            patterns: [{ from: 'public/assets', to: 'public/assets' }, { from: 'src/style.css' }],
+        }),
+        new NodePolyfillPlugin(),
+        new webpack.DefinePlugin({
+            'process.env': JSON.stringify(dotenv.parsed),
         }),
     ],
 }
