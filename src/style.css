@@ -9,6 +9,7 @@ body {
     width: 100vw;
     height: 100vh;
     cursor: auto;
+    background-image: url('public/assets/images/sky_background_green_hills.png');
 }
 
 canvas {
@@ -21,6 +22,11 @@ canvas {
 
 #collisionCanvas {
     opacity: 0;
+    z-index: -1;
+}
+
+#gameCanvas {
+    z-index: -1;
 }
 
 #soundToggle {
@@ -36,10 +42,12 @@ canvas {
 }
 
 #loginFormContainer {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: auto;
+  width: 100vw;
 }
 
 #loginForm {

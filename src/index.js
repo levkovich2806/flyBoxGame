@@ -88,7 +88,6 @@ window.addEventListener('load', function () {
     let ctx
     let collisionCanvas
     let collisionCtx
-    let backgroundCanvas
     let backgroundCtx
 
     let mousePosition = {
@@ -112,16 +111,10 @@ window.addEventListener('load', function () {
         collisionCanvas.width = window.innerWidth
         collisionCanvas.height = window.innerHeight
 
-        backgroundCanvas = document.getElementById('backgroundCanvas')
-        backgroundCtx = backgroundCanvas.getContext('2d')
-        backgroundCanvas.width = window.innerWidth
-        backgroundCanvas.height = window.innerHeight
-
         canvasPosition = canvas.getBoundingClientRect()
 
         ctx.font = '40px Impact'
         // drawTip();
-        drawBackground()
     }
 
     initData()
@@ -318,14 +311,6 @@ window.addEventListener('load', function () {
         drawTip()
 
         addScore({ username: getUsername(), score: Player.score, accuracy: Player.accuracy })
-    }
-
-    function drawBackground() {
-        const backGroundImage = new Image()
-        backGroundImage.src = 'public/assets/images/sky_background_green_hills.png'
-        backGroundImage.onload = function () {
-            backgroundCtx.drawImage(backGroundImage, 0, 0, 2826, 1536, 0, 0, canvas.width, canvas.height)
-        }
     }
 
     function armagedonCallback() {
