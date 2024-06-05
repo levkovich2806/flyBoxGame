@@ -416,7 +416,7 @@ window.addEventListener('load', function () {
 
         if (scores && Array.isArray(scores)) {
             scores.forEach(function (score, index) {
-                const date = dateHelperFactory()(new Date(score.__createdtime__))
+                const date = dateHelperFactory()(new Date(score.createdAt))
                 scoresListContainer.innerHTML += `
 <tr>
     <td>${index + 1}</td>
